@@ -7,12 +7,8 @@ import (
 	"testing"
 )
 
-const errorExpectToBeTemplate = "Expect error to be '%s', but got '%s'"
-
 const fileName = "test.json"
 const filePermission = 0644
-
-const item1 = "{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}"
 
 // Common validation tests
 func TestOperationMissingError(t *testing.T) {
@@ -32,7 +28,7 @@ func TestOperationMissingError(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
+		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
 	}
 }
 
@@ -53,7 +49,7 @@ func TestWrongOperationError(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
+		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
 	}
 }
 
@@ -74,7 +70,7 @@ func TestFileNameMissingError(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
+		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
 	}
 }
 
@@ -88,7 +84,7 @@ func TestListOperation(t *testing.T) {
 	}
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, filePermission)
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
 	defer os.Remove(fileName)
 	if err != nil {
 		t.Error(err)
@@ -141,14 +137,14 @@ func TestAddingOperationMissingItem(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
+		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
 	}
 }
 
 func TestAddingOperationSameID(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, filePermission)
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
@@ -160,7 +156,7 @@ func TestAddingOperationSameID(t *testing.T) {
 	file.Write([]byte(existingItem))
 	file.Close()
 
-	item := item1
+	item := "{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}"
 	args := Arguments{
 		"id":        "",
 		"operation": "add",
@@ -177,7 +173,7 @@ func TestAddingOperationSameID(t *testing.T) {
 	resultOutput := buffer.String()
 
 	if resultOutput != expectedOutput {
-		t.Errorf(errorExpectToBeTemplate, expectedOutput, resultOutput)
+		t.Errorf("Expect error to be '%s', but got '%s'", expectedOutput, resultOutput)
 	}
 }
 
@@ -185,7 +181,7 @@ func TestAddingOperation(t *testing.T) {
 	var buffer bytes.Buffer
 
 	expectedFileContent := "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}]"
-	itemToAdd := item1
+	itemToAdd := "{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}"
 	args := Arguments{
 		"id":        "",
 		"operation": "add",
@@ -211,7 +207,7 @@ func TestAddingOperation(t *testing.T) {
 	}
 
 	if string(bytes) != expectedFileContent {
-		t.Errorf(errorExpectToBeTemplate, expectedFileContent, bytes)
+		t.Errorf("Expect file content to be %s, but got %s", expectedFileContent, bytes)
 	}
 }
 
@@ -233,14 +229,14 @@ func TestFindByIdOperationMissingID(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
+		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
 	}
 }
 
 func TestFindByIdOperation(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, filePermission)
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
@@ -268,14 +264,14 @@ func TestFindByIdOperation(t *testing.T) {
 	resultString := buffer.String()
 
 	if resultString != expectedOutput {
-		t.Errorf(errorExpectToBeTemplate, expectedOutput, resultString)
+		t.Errorf("Expect output to be '%s', but got '%s'", expectedOutput, resultString)
 	}
 }
 
 func TestFindByIdOperationWrongID(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, filePermission)
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
@@ -303,7 +299,7 @@ func TestFindByIdOperationWrongID(t *testing.T) {
 	resultString := buffer.String()
 
 	if resultString != expectedOutput {
-		t.Errorf(errorExpectToBeTemplate, expectedOutput, resultString)
+		t.Errorf("Expect output to be '%s', but got '%s'", expectedOutput, resultString)
 	}
 }
 
@@ -327,14 +323,14 @@ func TestRemovingOperationMissingID(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
+		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
 	}
 }
 
 func TestRemovingOperationWrongID(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, filePermission)
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
@@ -362,14 +358,14 @@ func TestRemovingOperationWrongID(t *testing.T) {
 	resultOutput := buffer.String()
 
 	if resultOutput != expectedOutput {
-		t.Errorf(errorExpectToBeTemplate, expectedOutput, resultOutput)
+		t.Errorf("Expect output to be '%s', but got '%s'", expectedOutput, resultOutput)
 	}
 }
 
 func TestRemovingOperation(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, filePermission)
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
@@ -404,6 +400,6 @@ func TestRemovingOperation(t *testing.T) {
 	bytes, err := ioutil.ReadAll(file)
 
 	if string(bytes) != expectedFileContent {
-		t.Errorf(errorExpectToBeTemplate, expectedFileContent, bytes)
+		t.Errorf("Expect file content to be '%s', but got '%s'", expectedFileContent, bytes)
 	}
 }
