@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-const fileName = "test.toJson"
+const fileName = "test.json"
 const filePermission = 0644
 
 // Common validation tests
@@ -84,7 +84,7 @@ func TestListOperation(t *testing.T) {
 	}
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, filePermission)
 	defer os.Remove(fileName)
 	if err != nil {
 		t.Error(err)
@@ -145,7 +145,7 @@ func TestAddingOperationMissingItem(t *testing.T) {
 func TestAddingOperationSameID(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
@@ -237,7 +237,7 @@ func TestFindByIdOperationMissingID(t *testing.T) {
 func TestFindByIdOperation(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
@@ -272,7 +272,7 @@ func TestFindByIdOperation(t *testing.T) {
 func TestFindByIdOperationWrongID(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
@@ -331,7 +331,7 @@ func TestRemovingOperationMissingID(t *testing.T) {
 func TestRemovingOperationWrongID(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, filePermission)
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
@@ -366,7 +366,7 @@ func TestRemovingOperationWrongID(t *testing.T) {
 func TestRemovingOperation(t *testing.T) {
 	var buffer bytes.Buffer
 
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, filePermission)
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, filePermission)
 	defer os.Remove(fileName)
 
 	if err != nil {
