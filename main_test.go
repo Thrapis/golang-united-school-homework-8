@@ -7,8 +7,12 @@ import (
 	"testing"
 )
 
+const errorExpectToBeTemplate = "Expect error to be '%s', but got '%s'"
+
 const fileName = "test.json"
 const filePermission = 0644
+
+const item1 = "{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}"
 
 // Common validation tests
 func TestOperationMissingError(t *testing.T) {
@@ -28,7 +32,7 @@ func TestOperationMissingError(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -49,7 +53,7 @@ func TestWrongOperationError(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -70,7 +74,7 @@ func TestFileNameMissingError(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -137,7 +141,7 @@ func TestAddingOperationMissingItem(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -156,7 +160,7 @@ func TestAddingOperationSameID(t *testing.T) {
 	file.Write([]byte(existingItem))
 	file.Close()
 
-	item := "{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}"
+	item := item1
 	args := Arguments{
 		"id":        "",
 		"operation": "add",
@@ -173,7 +177,7 @@ func TestAddingOperationSameID(t *testing.T) {
 	resultOutput := buffer.String()
 
 	if resultOutput != expectedOutput {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedOutput, resultOutput)
+		t.Errorf(errorExpectToBeTemplate, expectedOutput, resultOutput)
 	}
 }
 
@@ -181,7 +185,7 @@ func TestAddingOperation(t *testing.T) {
 	var buffer bytes.Buffer
 
 	expectedFileContent := "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}]"
-	itemToAdd := "{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}"
+	itemToAdd := item1
 	args := Arguments{
 		"id":        "",
 		"operation": "add",
@@ -207,7 +211,7 @@ func TestAddingOperation(t *testing.T) {
 	}
 
 	if string(bytes) != expectedFileContent {
-		t.Errorf("Expect file content to be %s, but got %s", expectedFileContent, bytes)
+		t.Errorf(errorExpectToBeTemplate, expectedFileContent, bytes)
 	}
 }
 
@@ -229,7 +233,7 @@ func TestFindByIdOperationMissingID(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -264,7 +268,7 @@ func TestFindByIdOperation(t *testing.T) {
 	resultString := buffer.String()
 
 	if resultString != expectedOutput {
-		t.Errorf("Expect output to be '%s', but got '%s'", expectedOutput, resultString)
+		t.Errorf(errorExpectToBeTemplate, expectedOutput, resultString)
 	}
 }
 
@@ -299,7 +303,7 @@ func TestFindByIdOperationWrongID(t *testing.T) {
 	resultString := buffer.String()
 
 	if resultString != expectedOutput {
-		t.Errorf("Expect output to be '%s', but got '%s'", expectedOutput, resultString)
+		t.Errorf(errorExpectToBeTemplate, expectedOutput, resultString)
 	}
 }
 
@@ -323,7 +327,7 @@ func TestRemovingOperationMissingID(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -358,7 +362,7 @@ func TestRemovingOperationWrongID(t *testing.T) {
 	resultOutput := buffer.String()
 
 	if resultOutput != expectedOutput {
-		t.Errorf("Expect output to be '%s', but got '%s'", expectedOutput, resultOutput)
+		t.Errorf(errorExpectToBeTemplate, expectedOutput, resultOutput)
 	}
 }
 
@@ -400,6 +404,6 @@ func TestRemovingOperation(t *testing.T) {
 	bytes, err := ioutil.ReadAll(file)
 
 	if string(bytes) != expectedFileContent {
-		t.Errorf("Expect file content to be '%s', but got '%s'", expectedFileContent, bytes)
+		t.Errorf(errorExpectToBeTemplate, expectedFileContent, bytes)
 	}
 }

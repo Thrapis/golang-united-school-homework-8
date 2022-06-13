@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -99,8 +100,9 @@ func (dl dataList) json() string {
 }
 
 func dataToFile(filePath string, dataRows dataList) error {
-	err := os.WriteFile(filePath, []byte(dataRows.json()), 0644)
-	return err
+	if serialized, err := json.Marshal(dataRows); err == nil {
+		return os.WriteFile(filePath, []byte(serialized), 0644)
+	} else { return err}
 }
 
 func parseArgs(arrArgs []string) Arguments {
@@ -114,82 +116,111 @@ func parseArgs(arrArgs []string) Arguments {
 	return result
 }
 
+func doOperationAdd(args Arguments, writer io.Writer) error {
+	if fileName, ok := args[fileNameUnflag]; !ok || len(fileName) == 0 {
+		return fmt.Errorf(errorMissingFlagTemplate, fileNameFlag)
+	} else {
+		if item, ok := args[itemUnflag]; !ok || len(item) == 0 {
+			return fmt.Errorf(errorMissingFlagTemplate, itemFlag)
+		} else {
+			if list, err := dataFromFile(fileName); err == nil {
+				dr := dataRowFromString(item)
+				if list.ContainsWithId(dr.id) {
+					_, err = writer.Write([]byte(fmt.Sprintf(messageItemAlreadyExistsTemplate, dr.id)))
+					return err
+				}
+				list = append(list, dr)
+				if err := dataToFile(fileName, list); err != nil {
+					return err
+				}
+				_, err := writer.Write([]byte(list.json()))
+				return err
+			} else {
+				return err
+			}
+		}
+	}
+}
+
+func doOperationList(args Arguments, writer io.Writer) error {
+	if fileName, ok := args[fileNameUnflag]; !ok || len(fileName) == 0 {
+		return fmt.Errorf(errorMissingFlagTemplate, fileNameFlag)
+	} else {
+		if list, err := dataFromFile(fileName); err == nil {
+			_, err := writer.Write([]byte(list.json()))
+			return err
+		} else { return err }
+	}
+}
+
+func doOperationFindById(args Arguments, writer io.Writer) error {
+	if fileName, ok := args[fileNameUnflag]; !ok || len(fileName) == 0 {
+		return fmt.Errorf(errorMissingFlagTemplate, fileNameFlag)
+	} else {
+		if findId, ok := args[idUnflag]; !ok || len(findId) == 0 {
+			return fmt.Errorf(errorMissingFlagTemplate, idFlag)
+		} else {
+			if list, err := dataFromFile(fileName); err == nil {
+				for _, v := range list {
+					if v.id == findId {
+						_, err = writer.Write([]byte(v.json()))
+						return err
+					}
+				}
+				_, err = writer.Write([]byte(""))
+				return err
+			} else { return err }
+		}
+	}
+}
+
+func doOperationRemove(args Arguments, writer io.Writer) error {
+	if fileName, ok := args[fileNameUnflag]; !ok || len(fileName) == 0 {
+		return fmt.Errorf(errorMissingFlagTemplate, fileNameFlag)
+	} else {
+		if removeId, ok := args[idUnflag]; !ok || len(removeId) == 0 {
+			return fmt.Errorf(errorMissingFlagTemplate, idFlag)
+		} else {
+			if list, err := dataFromFile(fileName); err == nil {
+				if !list.ContainsWithId(removeId) {
+					_, err = writer.Write([]byte(fmt.Sprintf(messageItemNotFoundTemplate, removeId)))
+					return err
+				}
+				for i, v := range list {
+					if v.id == removeId {
+						newList := make(dataList, 0, len(list)-1)
+						newList = append(newList, list[0:i]...)
+						newList = append(newList, list[i+1:]...)
+						if err := dataToFile(fileName, newList); err != nil {
+							return err
+						}
+						_, err = writer.Write([]byte(newList.json()))
+						return err
+					}
+				}
+				return nil
+			} else { return err }
+		}
+	}
+}
+
 func Perform(args Arguments, writer io.Writer) error {
 	if operation, ok := args[operationUnflag]; !ok || len(operation) == 0 {
 		return fmt.Errorf(errorMissingFlagTemplate, operationFlag)
 	} else {
-		if fileName, ok := args[fileNameUnflag]; !ok || len(fileName) == 0 {
-			return fmt.Errorf(errorMissingFlagTemplate, fileNameFlag)
-		} else {
-			switch operation {
-				case addOperation:
-					if item, ok := args[itemUnflag]; !ok || len(item) == 0 {
-						return fmt.Errorf(errorMissingFlagTemplate, itemFlag)
-					} else {
-						if list, err := dataFromFile(fileName); err == nil {
-							dr := dataRowFromString(item)
-							if list.ContainsWithId(dr.id) {
-								_, err = writer.Write([]byte(fmt.Sprintf(messageItemAlreadyExistsTemplate, dr.id)))
-								return err
-							}
-							list = append(list, dr)
-							if err := dataToFile(fileName, list); err != nil {
-								return err
-							}
-							_, err := writer.Write([]byte(list.json()))
-							return err
-						} else { return err }
-					}
-				case listOperation:
-					if list, err := dataFromFile(fileName); err == nil {
-						_, err := writer.Write([]byte(list.json()))
-						return err
-					} else { return err }
-				case findByIdOperation:
-					if findId, ok := args[idUnflag]; !ok || len(findId) == 0 {
-						return fmt.Errorf(errorMissingFlagTemplate, idFlag)
-					} else {
-						if list, err := dataFromFile(fileName); err == nil {
-							for _, v := range list {
-								if v.id == findId {
-									_, err = writer.Write([]byte(v.json()))
-									return err
-								}
-							}
-							_, err = writer.Write([]byte(""))
-							return err
-						} else { return err }
-					}
-				case removeOperation:
-					if removeId, ok := args[idUnflag]; !ok || len(removeId) == 0 {
-						return fmt.Errorf(errorMissingFlagTemplate, idFlag)
-					} else {
-						if list, err := dataFromFile(fileName); err == nil {
-							if !list.ContainsWithId(removeId) {
-								_, err = writer.Write([]byte(fmt.Sprintf(messageItemNotFoundTemplate, removeId)))
-								return err
-							}
-							for i, v := range list {
-								if v.id == removeId {
-									newList := make(dataList, 0, len(list)-1)
-									newList = append(newList, list[0:i]...)
-									newList = append(newList, list[i+1:]...)
-									if err := dataToFile(fileName, newList); err != nil {
-										return err
-									}
-									_, err = writer.Write([]byte(newList.json()))
-									return err
-								}
-							}
-
-						} else { return err }
-					}
-				default:
-					return fmt.Errorf(errorOperationNotAllowedTemplate, args[operationUnflag])
-			}
+		switch operation {
+			case addOperation:
+				return doOperationAdd(args, writer)
+			case listOperation:
+				return doOperationList(args, writer)
+			case findByIdOperation:
+				return doOperationFindById(args, writer)
+			case removeOperation:
+				return doOperationRemove(args, writer)
+			default:
+				return fmt.Errorf(errorOperationNotAllowedTemplate, args[operationUnflag])
 		}
 	}
-	return nil
 }
 
 func main() {
