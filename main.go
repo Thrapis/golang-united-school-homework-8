@@ -80,7 +80,7 @@ func (dl *dataList) fromJson(textJson string) {
 }
 
 func dataFromFile(filePath string) (dataList, error) {
-	file, err := os.Open(filePath)
+	file, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
 	if err != nil { return nil, err }
 	byteContainment, err := ioutil.ReadAll(file)
 	if err != nil { return nil, err }
