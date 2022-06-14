@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-const fileName = "test.toJson"
+const fileName = "test.json"
 const filePermission = 0644
 
 // Common validation tests
