@@ -85,8 +85,8 @@ func dataFromFile(filePath string) (dataList, error) {
 	byteContainment, err := ioutil.ReadAll(file)
 	if err != nil { return nil, err }
 	result := dataList{}
-	err = json.Unmarshal(byteContainment, &result)
-	return result, err
+	_ = json.Unmarshal(byteContainment, &result)
+	return result, nil
 }
 
 func dataToFile(filePath string, dataRows dataList) error {
