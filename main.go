@@ -54,11 +54,11 @@ func (dl dataList) String() string {
 	return "List: " + dl.toJson()
 }
 
-func (dl dataList) ContainsWithId(id string) bool {
-	for _, v := range dl {
-		if v.Id == id { return true }
+func (dl dataList) indexOfRowWithId(id string) int {
+	for i, v := range dl {
+		if v.Id == id { return i }
 	}
-	return false
+	return -1
 }
 
 func (dr dataRow) toJson() string {
@@ -110,44 +110,36 @@ func parseArgs() Arguments {
 }
 
 func doOperationAdd(args Arguments, writer io.Writer) error {
-	fileName := args[fileNameFlag]
 	if item, ok := args[itemFlag]; !ok || len(item) == 0 {
 		return fmt.Errorf(errorMissingFlagTemplate, itemFlag)
 	} else {
-		if list, err := dataFromFile(fileName); err == nil {
+		if list, err := dataFromFile(args[fileNameFlag]); err == nil {
 			dr := dataRow{}
 			dr.fromJson(item)
-			if list.ContainsWithId(dr.Id) {
+			if list.indexOfRowWithId(dr.Id) != -1 {
 				_, err = writer.Write([]byte(fmt.Sprintf(messageItemAlreadyExistsTemplate, dr.Id)))
 				return err
 			}
 			list = append(list, dr)
-			if err := dataToFile(fileName, list); err != nil {
-				return err
-			}
-			fmt.Println()
-			_, err := writer.Write([]byte(list.toJson()))
+			if err := dataToFile(args[fileNameFlag], list); err != nil { return err }
+			_, _ = writer.Write([]byte(list.toJson()))
 			return err
-		} else {
-			return err
-		}
+		} else { return err }
 	}
 }
 
 func doOperationList(args Arguments, writer io.Writer) error {
-	fileName := args[fileNameFlag]
-	if list, err := dataFromFile(fileName); err == nil {
+	if list, err := dataFromFile(args[fileNameFlag]); err == nil {
 		_, err := writer.Write([]byte(list.toJson()))
 		return err
 	} else { return err }
 }
 
 func doOperationFindById(args Arguments, writer io.Writer) error {
-	fileName := args[fileNameFlag]
 	if findId, ok := args[idFlag]; !ok || len(findId) == 0 {
 		return fmt.Errorf(errorMissingFlagTemplate, idFlag)
 	} else {
-		if list, err := dataFromFile(fileName); err == nil {
+		if list, err := dataFromFile(args[fileNameFlag]); err == nil {
 			for _, v := range list {
 				if v.Id == findId {
 					_, err = writer.Write([]byte(v.toJson()))
@@ -161,20 +153,16 @@ func doOperationFindById(args Arguments, writer io.Writer) error {
 }
 
 func doOperationRemove(args Arguments, writer io.Writer) error {
-	fileName := args[fileNameFlag]
 	if removeId, ok := args[idFlag]; !ok || len(removeId) == 0 {
 		return fmt.Errorf(errorMissingFlagTemplate, idFlag)
 	} else {
-		if list, err := dataFromFile(fileName); err == nil {
-			for i, v := range list {
-				if v.Id == removeId {
-					newList := make(dataList, 0, len(list)-1)
-					newList = append(append(newList, list[0:i]...), list[i+1:]...)
-					if err := dataToFile(fileName, newList); err == nil {
-						_, err = writer.Write([]byte(newList.toJson()))
-						return err
-					} else { return err }
-				}
+		if list, err := dataFromFile(args[fileNameFlag]); err == nil {
+			if index := list.indexOfRowWithId(removeId); index != -1 {
+				newList := make(dataList, 0, len(list)-1)
+				newList = append(append(newList, list[0:index]...), list[index+1:]...)
+				if err := dataToFile(args[fileNameFlag], newList); err == nil {
+					_, _ = writer.Write([]byte(newList.toJson()))
+				} else { return err }
 			}
 			_, _ = writer.Write([]byte(fmt.Sprintf(messageItemNotFoundTemplate, removeId)))
 		} else { return err }
