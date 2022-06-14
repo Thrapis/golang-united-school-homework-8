@@ -166,25 +166,20 @@ func doOperationRemove(args Arguments, writer io.Writer) error {
 		return fmt.Errorf(errorMissingFlagTemplate, idFlag)
 	} else {
 		if list, err := dataFromFile(fileName); err == nil {
-			if !list.ContainsWithId(removeId) {
-				_, err = writer.Write([]byte(fmt.Sprintf(messageItemNotFoundTemplate, removeId)))
-				return err
-			}
 			for i, v := range list {
 				if v.Id == removeId {
 					newList := make(dataList, 0, len(list)-1)
-					newList = append(newList, list[0:i]...)
-					newList = append(newList, list[i+1:]...)
-					if err := dataToFile(fileName, newList); err != nil {
+					newList = append(append(newList, list[0:i]...), list[i+1:]...)
+					if err := dataToFile(fileName, newList); err == nil {
+						_, err = writer.Write([]byte(newList.toJson()))
 						return err
-					}
-					_, err = writer.Write([]byte(newList.toJson()))
-					return err
+					} else { return err }
 				}
 			}
-			return nil
+			_, _ = writer.Write([]byte(fmt.Sprintf(messageItemNotFoundTemplate, removeId)))
 		} else { return err }
 	}
+	return nil
 }
 
 func Perform(args Arguments, writer io.Writer) error {

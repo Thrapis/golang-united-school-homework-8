@@ -10,6 +10,12 @@ import (
 const fileName = "test.json"
 const filePermission = 0644
 
+const errorExpectErrorToBeTemplate =  "Expect error to be '%s', but got '%s'"
+const errorExpectOutputToBeTemplate =  "Expect output to be '%s', but got '%s'"
+
+const fileContentOne = "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}]"
+const fileContentTwo = "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34},{\"id\":\"2\",\"email\":\"test2@test.com\",\"age\":31}]"
+
 // Common validation tests
 func TestOperationMissingError(t *testing.T) {
 	var buffer bytes.Buffer
@@ -28,7 +34,7 @@ func TestOperationMissingError(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectErrorToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -49,7 +55,7 @@ func TestWrongOperationError(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectErrorToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -70,7 +76,7 @@ func TestFileNameMissingError(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectErrorToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -138,7 +144,7 @@ func TestAddingOperationMissingItem(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectErrorToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -152,7 +158,7 @@ func TestAddingOperationSameID(t *testing.T) {
 		t.Error(err)
 	}
 
-	existingItem := "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}]"
+	existingItem := fileContentOne
 
 	file.Write([]byte(existingItem))
 	file.Close()
@@ -174,14 +180,14 @@ func TestAddingOperationSameID(t *testing.T) {
 	resultOutput := buffer.String()
 
 	if resultOutput != expectedOutput {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedOutput, resultOutput)
+		t.Errorf(errorExpectErrorToBeTemplate, expectedOutput, resultOutput)
 	}
 }
 
 func TestAddingOperation(t *testing.T) {
 	var buffer bytes.Buffer
 
-	expectedFileContent := "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}]"
+	expectedFileContent := fileContentOne
 	itemToAdd := "{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}"
 	args := Arguments{
 		"id":        "",
@@ -230,7 +236,7 @@ func TestFindByIdOperationMissingID(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectErrorToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -244,7 +250,7 @@ func TestFindByIdOperation(t *testing.T) {
 		t.Error(err)
 	}
 
-	existingItems := "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34},{\"id\":\"2\",\"email\":\"test2@test.com\",\"age\":31}]"
+	existingItems := fileContentTwo
 
 	file.Write([]byte(existingItems))
 	file.Close()
@@ -265,7 +271,7 @@ func TestFindByIdOperation(t *testing.T) {
 	resultString := buffer.String()
 
 	if resultString != expectedOutput {
-		t.Errorf("Expect output to be '%s', but got '%s'", expectedOutput, resultString)
+		t.Errorf(errorExpectOutputToBeTemplate, expectedOutput, resultString)
 	}
 }
 
@@ -279,7 +285,7 @@ func TestFindByIdOperationWrongID(t *testing.T) {
 		t.Error(err)
 	}
 
-	existingItems := "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34},{\"id\":\"2\",\"email\":\"test2@test.com\",\"age\":31}]"
+	existingItems := fileContentTwo
 
 	file.Write([]byte(existingItems))
 	file.Close()
@@ -300,7 +306,7 @@ func TestFindByIdOperationWrongID(t *testing.T) {
 	resultString := buffer.String()
 
 	if resultString != expectedOutput {
-		t.Errorf("Expect output to be '%s', but got '%s'", expectedOutput, resultString)
+		t.Errorf(errorExpectOutputToBeTemplate, expectedOutput, resultString)
 	}
 }
 
@@ -324,7 +330,7 @@ func TestRemovingOperationMissingID(t *testing.T) {
 	}
 
 	if err.Error() != expectedError {
-		t.Errorf("Expect error to be '%s', but got '%s'", expectedError, err.Error())
+		t.Errorf(errorExpectErrorToBeTemplate, expectedError, err.Error())
 	}
 }
 
@@ -338,7 +344,7 @@ func TestRemovingOperationWrongID(t *testing.T) {
 		t.Error(err)
 	}
 
-	existingItems := "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34}]"
+	existingItems := fileContentOne
 
 	file.Write([]byte(existingItems))
 	file.Close()
@@ -359,7 +365,7 @@ func TestRemovingOperationWrongID(t *testing.T) {
 	resultOutput := buffer.String()
 
 	if resultOutput != expectedOutput {
-		t.Errorf("Expect output to be '%s', but got '%s'", expectedOutput, resultOutput)
+		t.Errorf(errorExpectOutputToBeTemplate, expectedOutput, resultOutput)
 	}
 }
 
@@ -373,7 +379,7 @@ func TestRemovingOperation(t *testing.T) {
 		t.Error(err)
 	}
 
-	existingItems := "[{\"id\":\"1\",\"email\":\"test@test.com\",\"age\":34},{\"id\":\"2\",\"email\":\"test2@test.com\",\"age\":31}]"
+	existingItems := fileContentTwo
 
 	file.Write([]byte(existingItems))
 	file.Close()
